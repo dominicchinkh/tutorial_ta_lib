@@ -10,6 +10,26 @@
 
 using namespace std;
 
+void print_result(const std::vector<MarketCandle> & history, const IndicatorResult & result)
+{
+    int output_tracker = 0;
+    for (int i = 0; i < history.size(); ++i) {
+        if (i >= result.beg_idx) {
+            std::cout << "  [Bar " << i << "] Close: " << history[i].close << " -> ";
+        
+            // Loop through every output stream this indicator generated
+            for (int out_idx = 0; out_idx < result.nb_output; ++out_idx) {
+                std::cout << "Out[" << out_idx << "]: " << result.series[out_idx][output_tracker] << " ";
+            }
+            std::cout << std::endl;
+
+            output_tracker++;
+        }
+    }
+    std::cout << std::endl;
+
+}
+
 int main(int argc, char *argv[]) 
 {
     // Initialize TA-Lib
@@ -39,8 +59,11 @@ int main(int argc, char *argv[])
     std::cout << "=================== SYSTEM STARTUP ===================" << std::endl;
 
     // RUN FILE 1: Abstract Dynamic Features Module
-    calculate_indicator_abstract("SMA", history, 3);
-    calculate_indicator_abstract("EMA", history, 3);
+    IndicatorResult rs1 = calculate_indicator_abstract("SMA", history, 3);
+    print_result(history, rs1);
+
+    IndicatorResult rs2 = calculate_indicator_abstract("EMA", history, 3);
+    print_result(history, rs2);
 
     std::cout << "------------------------------------------------------" << std::endl;
 
