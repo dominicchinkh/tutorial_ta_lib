@@ -75,6 +75,11 @@ IndicatorResult calculate_indicator_abstract(
     // Execute the Abstract Call Function
     TA_RetCode ret = TA_CallFunc(params, 0, data_size - 1, &result.beg_idx, &result.nb_element);
 
+    if (ret != TA_SUCCESS) {
+        result.beg_idx = 0;
+        result.nb_element = 0;
+    }
+
     //----------------------------
     // Free up memory allocations
     TA_ParamHolderFree(params);

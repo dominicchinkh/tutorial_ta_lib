@@ -5,12 +5,14 @@
 
 #include "standard_features.h"
 
-void calculate_ma_standard(const std::vector<MarketCandle>& data, int timePeriod) 
+IndicatorResult calculate_ma_standard(const std::vector<MarketCandle>& data, int timePeriod) 
 {
+    IndicatorResult result{};
+
     int dataSize = data.size();
 
     if (dataSize == 0) {
-        return;
+        return result;
     }
 
     // Prepare price data
@@ -29,10 +31,6 @@ void calculate_ma_standard(const std::vector<MarketCandle>& data, int timePeriod
     // TA-Lib functions need a certain amount of data before they can output the first valid point.
     int lookback = TA_MA_Lookback(timePeriod, maType);
     
-    // Calculate how many output elements we will actually get
-    int outNbElement = 0;
-    int outBegIdx = 0;
-    
     // Allocate space for the output
     std::vector<double> outReal(closePrices.size(), 0.0);
 
@@ -43,34 +41,43 @@ void calculate_ma_standard(const std::vector<MarketCandle>& data, int timePeriod
         closePrices.data(), // inReal (input array)
         timePeriod,         // optInTimePeriod
         maType,             // optInMAType (e.g., TA_MAType_SMA, TA_MAType_EMA)
-        &outBegIdx,         // outBegIdx (where the output actually starts relative to input)
-        &outNbElement,      // outNbElement (how many elements were written to output)
+        &result.beg_idx,    // outBegIdx (where the output actually starts relative to input)
+        &result.nb_element, // outNbElement (how many elements were written to output)
         outReal.data()      // outReal (output array)
     );
 
     // 6. Process and print results
     if (retCode == TA_SUCCESS) {
+
         std::cout << std::fixed << std::setprecision(2);
         std::cout << "TA_MA Calculation Successful!\n";
         std::cout << "Lookback periods needed: " << lookback << "\n";
-        std::cout << "Output starts at input index: " << outBegIdx << "\n";
-        std::cout << "Number of output elements: " << outNbElement << "\n\n";
+        std::cout << "Output starts at input index: " << result.beg_idx << "\n";
+        std::cout << "Number of output elements: " << result.nb_element << "\n\n";
 
         std::cout << "Day | Price  | MA Value\n";
         std::cout << "-----------------------\n";
         
-        for (size_t i = 0; i < closePrices.size(); ++i) {
+        for (int i = 0; i < dataSize; ++i) {
             std::cout << std::setw(3) << i << " | " << std::setw(6) << closePrices[i] << " | ";
             
-            // Because of lookback, the output array maps its 0th index to the input's `outBegIdx`
-            if (i >= static_cast<size_t>(outBegIdx)) {
-                int outIndex = i - outBegIdx;
+            // Map the flat data index back to TA-Lib's relative output space
+            if (i >= result.beg_idx) {
+                int outIndex = i - result.beg_idx;
                 std::cout << std::setw(8) << outReal[outIndex] << "\n";
             } else {
                 std::cout << "   NaN (Lookback period)\n";
             }
         }
+
+        // Push the flat buffer into our return structure's outer series vector
+        // A single MA only has 1 output stream, so result.series[0] will hold our vector
+        result.series.push_back(std::move(outReal));
     } else {
         std::cerr << "❌ Standard calculation failed." << std::endl;
+        result.beg_idx = 0;
+        result.nb_element = 0;
     }
+
+    return result;
 }

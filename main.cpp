@@ -14,9 +14,9 @@ void print_result(const std::vector<MarketCandle> & history, const IndicatorResu
 {
     int output_tracker = 0;
     for (int i = 0; i < history.size(); ++i) {
+        std::cout << "  [Bar " << i << "] Close: " << history[i].close << " -> ";
+
         if (i >= result.beg_idx) {
-            std::cout << "  [Bar " << i << "] Close: " << history[i].close << " -> ";
-        
             // Loop through every output stream this indicator generated
             for (int out_idx = 0; out_idx < result.nb_output; ++out_idx) {
                 std::cout << "Out[" << out_idx << "]: " << result.series[out_idx][output_tracker] << " ";
@@ -24,6 +24,9 @@ void print_result(const std::vector<MarketCandle> & history, const IndicatorResu
             std::cout << std::endl;
 
             output_tracker++;
+        } 
+        else {
+            std::cout << "(Lookback period)\n";
         }
     }
     std::cout << std::endl;
