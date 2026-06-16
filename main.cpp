@@ -5,33 +5,10 @@
 #include <ta_abstract.h>
 #include <ta_libc.h>
 
-#include "abstract_features.h"
-#include "standard_features.h"
+#include "abstract-features.h"
+#include "standard-features.h"
 
 using namespace std;
-
-void print_result(const std::vector<MarketCandle> & history, const IndicatorResult & result)
-{
-    int output_tracker = 0;
-    for (int i = 0; i < history.size(); ++i) {
-        std::cout << "  [Bar " << i << "] Close: " << history[i].close << " -> ";
-
-        if (i >= result.beg_idx) {
-            // Loop through every output stream this indicator generated
-            for (int out_idx = 0; out_idx < result.nb_output; ++out_idx) {
-                std::cout << "Out[" << out_idx << "]: " << result.series[out_idx][output_tracker] << " ";
-            }
-            std::cout << std::endl;
-
-            output_tracker++;
-        } 
-        else {
-            std::cout << "(Lookback period)\n";
-        }
-    }
-    std::cout << std::endl;
-
-}
 
 int main(int argc, char *argv[]) 
 {
@@ -62,15 +39,15 @@ int main(int argc, char *argv[])
     std::cout << "=================== SYSTEM STARTUP ===================" << std::endl;
 
     // RUN FILE 1: Abstract Dynamic Features Module
-    IndicatorResult rs1 = calculate_indicator_abstract("SMA", history, 3);
-    print_result(history, rs1);
+    IndicatorResult rs1 = calculateIndicatorAbstract("SMA", history, 3);
+    printAbstractResult(history, rs1);
 
-    IndicatorResult rs2 = calculate_indicator_abstract("EMA", history, 3);
-    print_result(history, rs2);
+    IndicatorResult rs2 = calculateIndicatorAbstract("EMA", history, 3);
+    printAbstractResult(history, rs2);
 
     std::cout << "------------------------------------------------------" << std::endl;
 
-    calculate_ma_standard(history, 3);
+    calculateMaStandard(history, 3);
 
     std::cout << "======================================================" << std::endl;
 
